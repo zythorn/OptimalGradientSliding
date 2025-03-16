@@ -2,11 +2,12 @@ from collections.abc import Callable
 from abc import ABC, abstractmethod
 import numpy as np
 
+
 class BaseFirstOrderOptimizer(ABC):
     def __init__(self, f: Callable[[np.ndarray], np.ndarray],
                  grad_f: Callable[[np.ndarray], np.ndarray],
                  x_init: np.ndarray, liepshitz_const: float,
-                 log: bool=False):
+                 log: bool = False):
         self.f = f
         self.grad_f = grad_f
         self.x = x_init
@@ -14,22 +15,24 @@ class BaseFirstOrderOptimizer(ABC):
         self.log = log
 
     @abstractmethod
-    def optimize(self, n_iters: int=10**3):
+    def optimize(self, n_iters: int = 10**3):
         raise NotImplementedError()
 
+
 class GradientDescent(BaseFirstOrderOptimizer):
-    def optimize(self, n_iters=10**3):
+    def optimize(self, n_iters: int = 10**3):
         for i in range(n_iters):
             self.x = self.x - 1. / self.L * self.grad_f(self.x)
             if self.log and (i + 1) % 50 == 0:
                 print(f"Function value after {i + 1} steps: {self.f(self.x)}")
         return self.x
 
+
 class AcceleratedGradientDescent(BaseFirstOrderOptimizer):
     def __init__(self, f: Callable[[np.ndarray], np.ndarray],
                  grad_f: Callable[[np.ndarray], np.ndarray],
                  x_init: np.ndarray, liepshitz_const: float,
-                 mu: float, log: bool=False):
+                 mu: float, log: bool = False):
         super().__init__(f, grad_f, x_init, liepshitz_const, log)
         self.beta = (np.sqrt(self.L / mu) - 1) / (np.sqrt(self.L / mu) + 1)
         self.momentum = x_init
@@ -37,7 +40,7 @@ class AcceleratedGradientDescent(BaseFirstOrderOptimizer):
         if self.log:
             self.x_history = [x_init]
 
-    def optimize(self, n_iters=10**3):
+    def optimize(self, n_iters: int = 10**3):
         for i in range(n_iters):
             self.y = self.x + self.beta * (self.x - self.momentum)
             self.momentum = self.x
@@ -51,11 +54,12 @@ class AcceleratedGradientDescent(BaseFirstOrderOptimizer):
             return self.x_history
         return self.x
 
+
 class OGMG(BaseFirstOrderOptimizer):
     def __init__(self, f: Callable[[np.ndarray], np.ndarray],
                  grad_f: Callable[[np.ndarray], np.ndarray],
                  x_init: np.ndarray, liepshitz_const: float,
-                 log: bool=False):
+                 log: bool = False):
         super().__init__(f, grad_f, x_init, liepshitz_const, log)
         self.y = x_init
 
@@ -67,7 +71,7 @@ class OGMG(BaseFirstOrderOptimizer):
         theta[0] = (1 + np.sqrt(1 + 8 * theta[1] ** 2)) / 2
         return theta
 
-    def optimize(self, n_iters: int=10**3):
+    def optimize(self, n_iters: int = 10**3):
         theta = self._schedule_theta(n_iters)
 
         for i in range(n_iters):
@@ -83,6 +87,7 @@ class OGMG(BaseFirstOrderOptimizer):
 
         return self.x
 
+
 class AcceleratedExtraGradient():
     def __init__(self, q: Callable[[np.ndarray], np.ndarray],
                  grad_q: Callable[[np.ndarray], np.ndarray],
@@ -91,7 +96,7 @@ class AcceleratedExtraGradient():
                  auxiliary_opt: BaseFirstOrderOptimizer,
                  x_init: np.ndarray, mu: float,
                  liepshitz_q: float, liepshitz_p: float,
-                 log: bool=False):
+                 log: bool = False):
         self.q = q
         self.grad_q = grad_q
         self.p = p
@@ -115,8 +120,8 @@ class AcceleratedExtraGradient():
         if self.log:
             self.x_history = [x_init]
 
-    def set_parameters(self, tau: float | None=None, theta: float | None=None,
-                       eta: float | None=None, alpha: float | None=None):
+    def set_parameters(self, tau: float | None = None, theta: float | None = None,
+                       eta: float | None = None, alpha: float | None = None):
         if tau is not None:
             self.tau = tau
         if theta is not None:
@@ -142,11 +147,11 @@ class AcceleratedExtraGradient():
 
         return f, grad_f
 
-    def optimize(self, n_iters: int=10**3) -> np.ndarray:
+    def optimize(self, n_iters: int = 10**3) -> np.ndarray:
         for i in range(n_iters):
             self.x_g = self.tau * self.x + (1. - self.tau) * self.x_f
 
-            f, grad_f= self._auxiliary_problem()
+            f, grad_f = self._auxiliary_problem()
             aux_opt = self.auxiliary_opt(f, grad_f, self.x_g,
                                          2 * self.liepshitz_p + self.liepshitz_q, None)
             self.x_f = aux_opt.optimize(4)

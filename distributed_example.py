@@ -21,7 +21,7 @@ if __name__ == "__main__":
         x_best = np.load("x_solution.npy")
     else:
         opt = GradientDescent(problem.r, problem.grad_r, x_init,
-                            liepshitz_const=Lp + Lq, log=True)
+                              liepshitz_const=(Lp + Lq), log=True)
         x_best = opt.optimize(3000)
         np.save("x_solution.npy", x_best)
 

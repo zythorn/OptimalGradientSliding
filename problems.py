@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class RidgeRegression():
     def __init__(self, X: np.ndarray, y: np.ndarray, lmbd: float):
         self.X = X
@@ -20,9 +21,10 @@ class RidgeRegression():
     def grad_g(self, x: np.ndarray) -> np.ndarray:
         return self.lmbd * x
 
+
 class RandomDistributedRidgeRegression():
-    def __init__(self, dim: int, data_size: int, lmbd: float, 
-                 gaussian_sigma: float=1., num_workers: int=1, seed: int=42):
+    def __init__(self, dim: int, data_size: int, lmbd: float,
+                 gaussian_sigma: float = 1., num_workers: int = 1, seed: int = 42):
         np.random.seed(seed)
         self.x_clean = np.random.rand(data_size, dim) * 2. - 1.
         self.y_clean = np.random.randn(data_size) * 2. - 1.
@@ -77,9 +79,10 @@ class RandomDistributedRidgeRegression():
             grad += self.grad_f_at_node(x, node)
         return grad / self.num_workers
 
+
 class DistributedRidgeRegression():
     def __init__(self, x_clean: np.ndarray, y_clean: np.ndarray, lmbd: float,
-                 gaussian_sigma: float=0.01, num_workers: int=1, seed: int=42):
+                 gaussian_sigma: float = 0.01, num_workers: int = 1, seed: int = 42):
         np.random.seed(seed)
         # x_clean = x_clean[:300, :300]
         # y_clean = y_clean[:300]
